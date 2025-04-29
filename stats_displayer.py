@@ -5,9 +5,12 @@ import stats
 
 available_stats = [
     stats.RatingProgress,
+    stats.WinRateVsHeroStatistics,
     stats.ItemUsageStatistics,
     stats.ItemBinaryUsageStatistics,
     stats.ItemWinRateStatistics,
+    stats.GameWinRateStatistics,
+    stats.TrophyWinRateStatistics,
 ]
 
 
