@@ -62,7 +62,7 @@ class RatingProgress(StatisticsFunction):
 
 
 class WinRateVsHeroStatistics(StatisticsFunction):
-    description = "Win rate against each opponent hero"
+    description = "Show win rate against each opponent hero"
 
     @staticmethod
     def calculate_win_rates(data, min_games):
@@ -109,9 +109,19 @@ class WinRateVsHeroStatistics(StatisticsFunction):
         plt.tight_layout()
 
         cursor = mplcursors.cursor(bars, hover=True)
-        cursor.connect("add", lambda sel: sel.annotation.set_text(
-            f"{opponent_heroes[sel.index]}: {win_rates[sel.index]:.2f}%"
-        ))
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(f"{opponent_heroes[sel.index]}: {win_rates[sel.index]:.2f}%")
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
 
         plt.show()
 
@@ -152,7 +162,7 @@ class ItemUsageStatistics(StatisticsFunction):
         plt.figure(figsize=(12, 6))
 
         bars_wins = plt.bar(x_values, win_counts, label="Wins", color='green', edgecolor='black')
-        bars_lossess = plt.bar(x_values, loss_counts, bottom=win_counts, label="Losses", color='red', edgecolor='black')
+        bars_losses = plt.bar(x_values, loss_counts, bottom=win_counts, label="Losses", color='red', edgecolor='black')
 
         plt.xticks(x_values, top_items, rotation=45, ha="right")
         plt.ylabel("Total Usage")
@@ -160,10 +170,34 @@ class ItemUsageStatistics(StatisticsFunction):
         plt.legend()
         plt.tight_layout()
 
-        cursor = mplcursors.cursor(bars_wins, hover=True)
-        cursor.connect("add", lambda sel: sel.annotation.set_text(
-            f"Win Percentage: {win_counts[sel.index] / (win_counts[sel.index] + loss_counts[sel.index]) * 100:.2f}%"
-        ))
+        cursor = mplcursors.cursor(bars_wins + bars_losses, hover=True)
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            bar = sel.artist
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 1.0,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
+            for index, b in enumerate(bars_wins):
+                if b == bar:
+                    win_pct = win_counts[index] / (win_counts[index] + loss_counts[index]) * 100
+                    sel.annotation.set_text(
+                        f"{top_items[index]}\nWin Rate: {win_pct:.2f}%"
+                    )
+                    return
+            for index, b in enumerate(bars_losses):
+                if b == bar:
+                    total = win_counts[index] + loss_counts[index]
+                    sel.annotation.set_text(
+                        f"{top_items[index]}\nTotal games: {total}"
+                    )
+                    return
 
         plt.show()
 
@@ -204,7 +238,7 @@ class ItemBinaryUsageStatistics(StatisticsFunction):
         plt.figure(figsize=(12, 6))
 
         bars_wins = plt.bar(x_values, win_counts, label="Wins", color='green', edgecolor='black')
-        bars_lossess = plt.bar(x_values, loss_counts, bottom=win_counts, label="Losses", color='red', edgecolor='black')
+        bars_losses = plt.bar(x_values, loss_counts, bottom=win_counts, label="Losses", color='red', edgecolor='black')
 
         plt.xticks(x_values, top_items, rotation=45, ha="right")
         plt.ylabel("Total Usage (binary per game)")
@@ -212,10 +246,34 @@ class ItemBinaryUsageStatistics(StatisticsFunction):
         plt.legend()
         plt.tight_layout()
 
-        cursor = mplcursors.cursor(bars_wins, hover=True)
-        cursor.connect("add", lambda sel: sel.annotation.set_text(
-            f"Win Rate: {win_counts[sel.index] / (win_counts[sel.index] + loss_counts[sel.index]) * 100:.2f}%"
-        ))
+        cursor = mplcursors.cursor(bars_wins + bars_losses, hover=True)
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            bar = sel.artist
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 1.0,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
+            for index, b in enumerate(bars_wins):
+                if b == bar:
+                    win_pct = win_counts[index] / (win_counts[index] + loss_counts[index]) * 100
+                    sel.annotation.set_text(
+                        f"{top_items[index]}\nWin Rate: {win_pct:.2f}%"
+                    )
+                    return
+            for index, b in enumerate(bars_losses):
+                if b == bar:
+                    total = win_counts[index] + loss_counts[index]
+                    sel.annotation.set_text(
+                        f"{top_items[index]}\nTotal games: {total}"
+                    )
+                    return
 
         plt.show()
 
@@ -270,9 +328,19 @@ class ItemWinRateStatistics(StatisticsFunction):
         plt.tight_layout()
 
         cursor = mplcursors.cursor(bars, hover=True)
-        cursor.connect("add", lambda sel: sel.annotation.set_text(
-            f"Win Rate: {win_rates[sel.index]:.2f}%"
-        ))
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(f"{items[sel.index]}\nWin Rate: {win_rates[sel.index]:.2f}%")
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
 
         plt.show()
 
@@ -325,9 +393,19 @@ class GameWinRateStatistics(StatisticsFunction):
         plt.tight_layout()
 
         cursor = mplcursors.cursor(bars, hover=True)
-        cursor.connect("add", lambda sel: sel.annotation.set_text(
-            f"Game {games[sel.index]}: {win_rates[sel.index]:.2f}%"
-        ))
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(f"Game {games[sel.index]}: {win_rates[sel.index]:.2f}%")
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
 
         plt.show()
 
@@ -381,8 +459,18 @@ class TrophyWinRateStatistics(StatisticsFunction):
         plt.tight_layout()
 
         cursor = mplcursors.cursor(bars, hover=True)
-        cursor.connect("add", lambda sel: sel.annotation.set_text(
-            f"Trophies {trophies[sel.index]}: {win_rates[sel.index]:.2f}%"
-        ))
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(f"Trophies {trophies[sel.index]}: {win_rates[sel.index]:.2f}%")
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
 
         plt.show()
