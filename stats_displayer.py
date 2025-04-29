@@ -3,7 +3,12 @@ import os
 
 import stats
 
-available_stats = [stats.RatingProgress]
+available_stats = [
+    stats.RatingProgress,
+    stats.ItemUsageStatistics,
+    stats.ItemBinaryUsageStatistics,
+    stats.ItemWinRateStatistics,
+]
 
 
 def display_menu():
@@ -27,16 +32,19 @@ def main():
     while True:
         display_menu()
         choice = input("Enter choice: ").strip()
+
         try:
             choice = int(choice)
-            if 1 <= choice <= len(available_stats):
-                available_stats[choice - 1].display(data)
-            elif choice == len(available_stats) + 1:
-                break
-            else:
-                print("Invalid choice, please try again.")
         except ValueError:
             print("Invalid input, please enter a number.")
+            continue
+
+        if 1 <= choice <= len(available_stats):
+            available_stats[choice - 1].display(data)
+        elif choice == len(available_stats) + 1:
+            break
+        else:
+            print("Invalid choice, please try again.")
 
 
 if __name__ == "__main__":

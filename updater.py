@@ -9,39 +9,41 @@ def add_game():
     game = {}
 
     while True:
-        result = input("    Win or Loss? (W/L): ").strip().upper()
+        result = input("  Win or Loss? (W/L): ").strip().upper()
         if result in ("W", "L"):
             game["result"] = result
             break
-        print("    Invalid input. Please enter W or L.")
+        print("  Invalid input. Please enter W or L.")
 
     while True:
         try:
             opponent_rating = int(input("  Opponent rating: "))
             break
         except ValueError:
-            print("Invalid input, please enter a number.")
+            print("  Invalid input, please enter a number.")
     game["opponent_rating"] = opponent_rating
 
     while True:
-        opponent_hero = input("    Opponent hero: ").strip().lower()
+        opponent_hero = input("  Opponent hero: ").strip().lower()
         if opponent_hero in HEROES:
             game["opponent_hero"] = opponent_hero
             break
-        print("    Invalid hero. Please enter a valid hero name.")
+        print("  Invalid hero. Please enter a valid hero name.")
 
     items = {}
-    print("    Enter your items one by one (press Enter on empty input to finish):")
+    item_count = 1
+    print("  Enter your items one by one (press Enter on empty input to finish):")
     while True:
-        item = input("      Item: ").strip().lower()
+        item = input(f"    Item {item_count}: ").strip().lower()
         if item == "":
             break
         if item in ITEMS:
             if item not in items:
                 items[item] = 0
             items[item] += 1
+            item_count += 1
         else:
-            print("      Invalid item. Please enter a valid item name.")
+            print("    Invalid item. Please enter a valid item name.")
     game["items"] = dict(sorted(items.items()))
 
     return game
