@@ -9,6 +9,7 @@ available_stats = [
     stats.ItemUsageStatistics,
     stats.ItemBinaryUsageStatistics,
     stats.ItemWinRateStatistics,
+    stats.ItemBinaryWinRateStatistics,
     stats.GameWinRateStatistics,
     stats.TrophyWinRateStatistics,
 ]
@@ -16,9 +17,9 @@ available_stats = [
 
 def display_menu():
     print("\nChoose an option:")
+    print("0. Exit")
     for index, stat in enumerate(available_stats, 1):
         print(f"{index}. {stat.description}")
-    print(f"{len(available_stats) + 1}. Exit")
 
 
 def main():
@@ -42,10 +43,10 @@ def main():
             print("Invalid input, please enter a number.")
             continue
 
-        if 1 <= choice <= len(available_stats):
-            available_stats[choice - 1].display(data)
-        elif choice == len(available_stats) + 1:
+        if choice == 0:
             break
+        elif 1 <= choice <= len(available_stats):
+            available_stats[choice - 1].display(data)
         else:
             print("Invalid choice, please try again.")
 

@@ -41,7 +41,7 @@ class RatingProgress(StatisticsFunction):
         return x_values, y_values
 
     @staticmethod
-    def display(data):
+    def display(data, **kwargs):
         x_values, y_values = RatingProgress.calculate_ratings(data)
 
         plt.style.use('seaborn-v0_8-darkgrid')
@@ -56,7 +56,19 @@ class RatingProgress(StatisticsFunction):
         plt.tight_layout()
 
         cursor = mplcursors.cursor(points, hover=True)
-        cursor.connect("add", lambda sel: sel.annotation.set_text(f"Rating: {y_values[int(sel.index)]}"))
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(f"Rating: {y_values[int(sel.index)]}")
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
 
         plt.show()
 
@@ -283,19 +295,19 @@ class ItemWinRateStatistics(StatisticsFunction):
 
     @staticmethod
     def calculate_win_rates(data, k, min_games):
-        win_counts = {}
         game_counts = {}
+        win_counts = {}
 
         for match in data["matches"]:
             for game in match["games"]:
                 result = game["result"]
-                for item in game["items"]:
-                    if item not in win_counts:
+                for item, count in game["items"].items():
+                    if item not in game_counts:
                         win_counts[item] = 0
                         game_counts[item] = 0
-                    game_counts[item] += 1
+                    game_counts[item] += count
                     if result == "W":
-                        win_counts[item] += 1
+                        win_counts[item] += count
 
         win_rates = [(item, win_counts[item] / game_counts[item]) 
                      for item in win_counts if game_counts[item] >= min_games]
@@ -323,6 +335,73 @@ class ItemWinRateStatistics(StatisticsFunction):
 
         plt.xticks(x_values, items, rotation=45, ha="right")
         plt.ylabel("Win Rate")
+        plt.title(f"Top {k} Items by Win Rate")
+        plt.ylim(0, 100)
+        plt.tight_layout()
+
+        cursor = mplcursors.cursor(bars, hover=True)
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(f"{items[sel.index]}\nWin Rate: {win_rates[sel.index]:.2f}%")
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
+
+        plt.show()
+
+
+class ItemBinaryWinRateStatistics(StatisticsFunction):
+    description = "Show top items by win rate (binary per game)"
+
+    @staticmethod
+    def calculate_win_rates(data, k, min_games):
+        game_counts = {}
+        win_counts = {}
+
+        for match in data["matches"]:
+            for game in match["games"]:
+                result = game["result"]
+                for item in game["items"]:
+                    if item not in game_counts:
+                        game_counts[item] = 0
+                        win_counts[item] = 0
+                    game_counts[item] += 1
+                    if result == "W":
+                        win_counts[item] += 1
+
+        win_rates = [(item, win_counts[item] / game_counts[item]) 
+                     for item in win_counts if game_counts[item] >= min_games]
+        sorted_win_rates = sorted(win_rates, key=lambda x: x[1], reverse=True)
+        items, win_rates = zip(*sorted_win_rates[:k])
+
+        return items, win_rates
+
+    @staticmethod
+    def display(data, **kwargs):
+        k = kwargs.get("k", 30)
+        min_games = kwargs.get("min_games", 20)
+        items, win_rates = ItemBinaryWinRateStatistics.calculate_win_rates(data, k, min_games)
+
+        win_rates = [win_rate * 100 for win_rate in win_rates]
+        x_values = range(len(items))
+
+        plt.style.use('seaborn-v0_8-darkgrid')
+        plt.figure(figsize=(12, 6))
+
+        cmap = cm.get_cmap('RdYlGn')
+        norm = plt.Normalize(vmin=0, vmax=100)
+
+        bars = plt.bar(x_values, win_rates, color=cmap(norm(win_rates)), edgecolor='black')
+
+        plt.xticks(x_values, items, rotation=45, ha="right")
+        plt.ylabel("Win Rate (binary per game)")
         plt.title(f"Top {k} Items by Win Rate")
         plt.ylim(0, 100)
         plt.tight_layout()
