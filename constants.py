@@ -554,7 +554,6 @@ ITEMS = [
     "sunflower",
     "superior_bolts",
     "superior_gear",
-    "superior_gear",
     "superior_spring",
     "tainted_soulstone",
     "temporal_stone",

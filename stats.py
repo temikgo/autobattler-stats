@@ -1,8 +1,10 @@
 from collections import Counter
-import json
+from matplotlib import patheffects
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import mplcursors
+import numpy as np
+
 
 class StatisticsFunction:
     description = ""
@@ -70,6 +72,145 @@ class RatingProgress(StatisticsFunction):
             })
             sel.annotation.set_fontsize(10)
 
+        plt.show()
+
+
+class AccurateWinRateByRating(StatisticsFunction):
+    description = "Accurate win rate estimation by opponent rating"
+
+    @staticmethod
+    def prepare_data(data):
+        ratings = []
+        results = []
+        for match in data["matches"]:
+            for game in match["games"]:
+                rating = game.get("opponent_rating")
+                if rating is None or not np.isfinite(rating):
+                    continue
+                ratings.append(float(rating))
+                results.append(1 if game.get("result") == "W" else 0)
+
+        return np.array(ratings), np.array(results)
+
+    @staticmethod
+    def display(data, **kwargs):
+        ratings, results = AccurateWinRateByRating.prepare_data(data)
+
+        plt.figure(figsize=(14, 7))
+        plt.style.use('seaborn-v0_8-darkgrid')
+
+        x_values = np.linspace(min(ratings), max(ratings), 100)
+
+        winrates = []
+        for x in x_values:
+            weights = np.exp(-0.5*((ratings - x)/(0.15*(max(ratings)-min(ratings))))**2)
+            winrates.append(np.average(results, weights=weights))
+        winrates = np.array(winrates)
+
+        plt.plot(x_values, winrates, color='#3a86ff', linewidth=3, label='Win probability')
+
+        plt.axhline(0.5, color='black', linestyle=':', alpha=0.5)
+        plt.title(f"Win Rate vs Opponent Rating", fontsize=16, pad=20)
+        plt.xlabel("Opponent Rating", fontsize=12)
+        plt.ylabel("Win Probability", fontsize=12)
+        plt.ylim(0, 1)
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+
+        ax2 = plt.gca().twinx()
+        ax2.hist(ratings, bins=20, color='gray', alpha=0.2)
+        ax2.set_ylabel('Game count', fontsize=12)
+
+        plt.tight_layout()
+        plt.show()
+
+
+class OpponentHeroDistribution(StatisticsFunction):
+    description = "Show distribution of opponent heroes"
+
+    @staticmethod
+    def calculate_games(data, min_games):
+        game_counts = {}
+
+        for match in data["matches"]:
+            for game in match["games"]:
+                opponent = game["opponent_hero"]
+                if opponent not in game_counts:
+                    game_counts[opponent] = 0
+                game_counts[opponent] += 1
+
+        filtered_counts = {hero: count for hero, count in game_counts.items() if count >= min_games}
+        sorted_counts = sorted(filtered_counts.items(), key=lambda x: x[1], reverse=True)
+        heroes, games = zip(*sorted_counts)
+
+        return heroes, games
+
+
+    @staticmethod
+    def display(data, **kwargs):
+        min_games = kwargs.get("min_games", 5)
+        heroes, games = OpponentHeroDistribution.calculate_games(data, min_games)
+
+        plt.style.use('seaborn-v0_8-dark')
+        plt.rcParams['font.family'] = 'DejaVu Sans'
+
+        fig, ax = plt.subplots(figsize=(12, 8), dpi=100)
+        fig.patch.set_facecolor('#2e2e2e')
+        ax.set_facecolor('#2e2e2e')
+
+        colors = plt.cm.viridis(np.linspace(0, 1, len(heroes)))
+
+        wedges, texts, autotexts = ax.pie(
+            games,
+            labels=None,
+            autopct='%1.2f%%',
+            startangle=90,
+            colors=colors,
+            wedgeprops={
+                'edgecolor': 'white',
+                'linewidth': 0.5,
+                'width': 0.6
+            },
+            pctdistance=0.85,
+            textprops={
+                'fontsize': 10,
+                'fontweight': 'bold',
+                'color': 'white',
+                'path_effects': [
+                    patheffects.withStroke(linewidth=2, foreground='black')
+                ]
+            },
+            rotatelabels=True
+        )
+
+        centre_circle = plt.Circle((0,0), 0.4, color='#2e2e2e', fc='#2e2e2e', linewidth=0)
+        fig.gca().add_artist(centre_circle)
+
+        legend = ax.legend(
+            wedges,
+            [f"{h} ({g})" for h, g in zip(heroes, games)],
+            title="Heroes (Games)",
+            loc="center left",
+            bbox_to_anchor=(1, 0.5),
+            fontsize=10,
+            title_fontsize=12,
+            framealpha=0.9,
+            labelcolor='white',
+            facecolor='#3e3e3e',
+            edgecolor='white'
+        )
+        legend.get_title().set_color('white')
+
+        total_games = sum(games)
+        ax.set_title(
+            f"Opponent Hero Distribution\nTotal Games: {total_games} | Min Games: {min_games}",
+            fontsize=14,
+            fontweight='bold',
+            color='white',
+            pad=20
+        )
+
+        plt.tight_layout()
         plt.show()
 
 
