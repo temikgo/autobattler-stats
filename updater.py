@@ -2,7 +2,7 @@ import json
 import os
 
 from collections import Counter
-from constants import HEROES, ITEMS
+from constants import HEROES, ITEMS, RELICS
 
 
 def add_game():

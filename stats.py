@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
 
+from constants import RELICS
+
 
 class StatisticsFunction:
     description = ""
@@ -553,6 +555,73 @@ class ItemBinaryWinRateStatistics(StatisticsFunction):
         @cursor.connect("add")
         def on_hover(sel):
             sel.annotation.set_text(f"{items[sel.index]}\nWin Rate: {win_rates[sel.index]:.2f}%")
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
+
+        plt.show()
+
+
+class RelicWinRateStatistics(StatisticsFunction):
+    description = "Show win rate for each relic"
+
+    @staticmethod
+    def calculate_win_rates(data, min_games):
+        game_counts = {}
+        win_counts = {}
+
+        for match in data["matches"]:
+            for game in match["games"]:
+                result = game["result"]
+                for item in game["items"]:
+                    if item in RELICS:
+                        if item not in game_counts:
+                            win_counts[item] = 0
+                            game_counts[item] = 0
+                        game_counts[item] += 1
+                        if result == "W":
+                            win_counts[item] += 1
+
+        win_rates = [(item, win_counts[item] / game_counts[item]) 
+                     for item in win_counts if game_counts[item] >= min_games]
+        sorted_win_rates = sorted(win_rates, key=lambda x: x[1], reverse=True)
+        relics, win_rates = zip(*sorted_win_rates)
+
+        return relics, win_rates
+
+    @staticmethod
+    def display(data, **kwargs):
+        min_games = kwargs.get("min_games", 20)
+        relics, win_rates = RelicWinRateStatistics.calculate_win_rates(data, min_games)
+
+        win_rates = [win_rate * 100 for win_rate in win_rates]
+        x_values = range(len(relics))
+
+        plt.style.use('seaborn-v0_8-darkgrid')
+        plt.figure(figsize=(12, 6))
+
+        cmap = cm.get_cmap('RdYlGn')
+        norm = plt.Normalize(vmin=0, vmax=100)
+
+        bars = plt.bar(x_values, win_rates, color=cmap(norm(win_rates)), edgecolor='black')
+
+        plt.xticks(x_values, relics, rotation=45, ha="right")
+        plt.ylabel("Win Rate")
+        plt.title(f"Relics Win Rate")
+        plt.ylim(0, 100)
+        plt.tight_layout()
+
+        cursor = mplcursors.cursor(bars, hover=True)
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(f"{relics[sel.index]}: {win_rates[sel.index]:.2f}%")
             sel.annotation.get_bbox_patch().update({
                 "facecolor": "white",
                 "edgecolor": "black",

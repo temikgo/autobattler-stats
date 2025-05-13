@@ -12,6 +12,7 @@ available_stats = [
     stats.ItemBinaryUsageStatistics,
     stats.ItemWinRateStatistics,
     stats.ItemBinaryWinRateStatistics,
+    stats.RelicWinRateStatistics,
     stats.GameWinRateStatistics,
     stats.TrophyWinRateStatistics,
 ]
