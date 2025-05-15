@@ -46,7 +46,10 @@ IFS=$'\n' RELICS=($(sort <<<"${RELICS[*]}"))
     echo
     echo "RELICS = ["
     printf "    %s,\n" "${RELICS[@]}"
-    echo "]"
+    echo "]"echo
+    echo "UNIQUES = {"
+    printf "    %s,\n" "${UNIQUES[@]}"
+    echo "}"
 } > "$OUTPUT_FILE"
 
 echo "$OUTPUT_FILE successfully generated"

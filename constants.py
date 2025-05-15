@@ -675,3 +675,116 @@ RELICS = [
     "velocity_ring",
     "venomous_pincer",
 ]
+
+UNIQUES = {
+    "buzz": [
+        "bag_of_maggots",
+        "bombus",
+        "buzzing_bungalow",
+        "frostwing",
+        "lily_pad_prince",
+        "pollen_palace",
+        "razorvine",
+        "smokeweaver",
+    ],
+    "celeste": [
+        "cyclone_gem",
+        "electric_crown",
+        "glaring_bulb",
+        "liquid_electricity",
+        "shock_gloves",
+        "storm_lute",
+        "thunder_rat",
+        "thunderstrike_ring"
+    ],
+    "chana": [
+        "fire_vortex",
+        "iceburn_scepter",
+        "kelvin's_tome",
+        "mana_stew",
+        "sigil_of_eternal_frost",
+        "wand_of_backdraft",
+        "wildfire_essence",
+        "wizard_hat"
+    ],
+    "dorf": [
+        "baby_core_creeper",
+        "blast_furnace_bellows",
+        "caged_songbird",
+        "dark_iron_anvil",
+        "forgemaster's_tongs",
+        "grandma's_dusty_blast_box",
+        "proto-golem",
+        "rickety_mining_cart",
+    ],
+    "enoch": [
+        "bat_visor",
+        "bloodsucker's_visage",
+        "gourd_grimace",
+        "powersurge_mask",
+        "purrfect_mask",
+        "rebirth_mask",
+        "unblinking_overwatch",
+        "web-slinger_cover",
+    ],
+    "harkon": [
+        "ancient_grog",
+        "bloodrage_axe",
+        "corrupted_mushroom",
+        "lost_runeword",
+        "pet_rock",
+        "stoneheart_brew",
+        "stonehide_mask",
+        "war_drum"
+    ],
+    "morrow": [
+        "arcane_starcharter",
+        "chum_bucket",
+        "crimson_seahorse",
+        "impossible_bottle",
+        "leaky_prototype",
+        "six-spoke_ship's_wheel",
+        "tiny_kraken_tooth",
+        "worn-out_lifebuoy"
+    ],
+    "nymphedora": [
+        "blazegaze",
+        "dreadleaf",
+        "fiery_quiver",
+        "final_blow",
+        "infinity_sight",
+        "poison_arrows",
+        "reptile_stalker",
+        "shadow_cloak"
+    ],
+    "ronan": [
+        "hungering_ward",
+        "ironwill_banner",
+        "knight's_blessing",
+        "piercing_lance",
+        "shield_spikes",
+        "weapon_rack",
+        "winged_thorns",
+        "young_squire"
+    ],
+    "sage": [
+        "astral_gloves",
+        "flashbang",
+        "kitsune_spirit_mask",
+        "noxious_lantern",
+        "plague_ichor",
+        "scroll_of_binding",
+        "serpent_deathbolt",
+        "timeless_hourglass"
+    ],
+    "tink": [
+        "big_clockwork_bomb",
+        "core_reactor",
+        "edge_calibrator",
+        "mechanized_armor",
+        "portable_siege_engine",
+        "potion_mixer",
+        "rustjaw_shredder",
+        "sprint_bot"
+    ]
+}
