@@ -12,6 +12,20 @@ HEROES = [
     "tink",
 ]
 
+RANKS = [
+    (0, 100, "#974737", "Bronze"),
+    (100, 200, "#958284", "Silver"),
+    (200, 300, "#BF7A3A", "Gold"),
+    (300, 500, "#5FBA44", "Emerald"),
+    (500, 700, "#CA181E", "Ruby"),
+    (700, 1000, "#2C3FAF", "Sapphire"),
+    (1000, 1500, "#AAFEFF", "Diamond"),
+    (1500, 2300, "#7D5D9F", "Heroic"),
+    (2300, 3500, "#D424D0", "Epic"),
+    (3500, 5000, "#FF6243", "Legendary"),
+    (5000, float("inf"), "#FFEA05", "Mythic")
+]
+
 ITEMS = [
     "abyssal_embrace",
     "adamantite_axepick",

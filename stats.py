@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
 
-from constants import RELICS, UNIQUES
+from constants import RANKS, RELICS, UNIQUES
 
 
 class StatisticsFunction:
@@ -47,16 +47,37 @@ class RatingProgress(StatisticsFunction):
     @staticmethod
     def display(data, **kwargs):
         x_values, y_values = RatingProgress.calculate_ratings(data)
+        min_rating, max_rating = min(y_values), max(y_values)
 
         plt.style.use('seaborn-v0_8-darkgrid')
-        plt.figure(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-        plt.plot(x_values, y_values, linestyle='-', color='b')
-        points = plt.scatter(x_values, y_values, color='b')
+        padding = (max_rating - min_rating) * 0.05
+        visible_min = min_rating - padding
+        visible_max = max_rating + padding
+        visible_zones = [
+            zone for zone in RANKS 
+            if zone[0] <= max_rating and zone[1] >= min_rating
+        ]
 
-        plt.xlabel("Match Number")
-        plt.ylabel("Rating")
-        plt.title("Rating Progress")
+        for start, end, color, label in visible_zones:
+            draw_start = max(start, visible_min)
+            draw_end = min(end, visible_max)
+            ax.axhspan(draw_start, draw_end, facecolor=color, alpha=0.7)
+            if start >= min_rating or end <= max_rating:
+                label_pos = (max(start, min_rating) + min(end, max_rating)) / 2
+                ax.text(1.02, label_pos, f"{label} ({start}-{end})", 
+                    transform=ax.get_yaxis_transform(),
+                    va='center', ha='left', color='dimgray')
+
+        ax.plot(x_values, y_values, linestyle='-', color='black', linewidth=2)
+        points = ax.scatter(x_values, y_values, color='black', zorder=3)
+
+        ax.set_ylim(min_rating - padding, max_rating + padding)
+        
+        ax.set_xlabel("Match Number")
+        ax.set_ylabel("Rating")
+        ax.set_title("Rating Progress")
         plt.tight_layout()
 
         cursor = mplcursors.cursor(points, hover=True)
