@@ -16,6 +16,7 @@ available_stats = [
     stats.UniqueWinRateStatistics,
     stats.GameWinRateStatistics,
     stats.TrophyWinRateStatistics,
+    stats.SmartItemWinRateStatistics,
 ]
 
 

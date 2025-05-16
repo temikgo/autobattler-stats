@@ -830,3 +830,119 @@ class TrophyWinRateStatistics(StatisticsFunction):
             sel.annotation.set_fontsize(10)
 
         plt.show()
+
+
+class SmartItemWinRateStatistics(StatisticsFunction):
+    description = "Show top items by advanced effectiveness metrics"
+
+    @staticmethod
+    def calculate_metrics(data, k=30, min_games=20):
+        total_games = sum(len(match["games"]) for match in data["matches"])
+        total_wins = sum(1 for match in data["matches"] for game in match["games"] if game["result"] == "W")
+        overall_win_rate = total_wins / total_games
+
+        game_counts = {}
+        win_counts = {}
+
+        for match in data["matches"]:
+            for game in match["games"]:
+                result = game["result"]
+                for item, count in game["items"].items():
+                    if item not in game_counts:
+                        win_counts[item] = 0
+                        game_counts[item] = 0
+                    game_counts[item] += count
+                    if result == "W":
+                        win_counts[item] += count
+
+        metrics = {}
+        for item in game_counts:
+            if game_counts[item] < min_games:
+                continue
+
+            wins = win_counts[item]
+            games = game_counts[item]
+            wr = wins / games
+
+            bayesian_wr = (wins + overall_win_rate * 10) / (games + 10)
+
+            z = 1.96
+            p_hat = wr
+            n = games
+            wilson_lower = (p_hat + z*z/(2*n) - z*((p_hat*(1-p_hat)+z*z/(4*n))/n)**0.5)/(1+z*z/n)
+
+            lift = (wr - overall_win_rate) / overall_win_rate * 100
+
+            eb_shrinkage = 1 - (10 / (games + 10))
+            eb_wr = overall_win_rate * (1 - eb_shrinkage) + wr * eb_shrinkage
+            
+            metrics[item] = {
+                'games': games,
+                'win_rate': wr,
+                'bayesian': bayesian_wr,
+                'wilson_lower': wilson_lower,
+                'lift': lift,
+                'empirical_bayes': eb_wr,
+                'combined_score': (bayesian_wr * 0.4 + wilson_lower * 0.3 + eb_wr * 0.3) * 100
+            }
+
+        return metrics, overall_win_rate
+
+    @staticmethod
+    def display(data, metric='combined_score', **kwargs):
+        k = kwargs.get("k", 30)
+        min_games = kwargs.get("min_games", 20)
+        
+        metrics, overall_win_rate = SmartItemWinRateStatistics.calculate_metrics(data, k, min_games)
+
+        sorted_items = sorted(metrics.items(), key=lambda x: x[1][metric], reverse=True)[:k]
+        
+        items = [item[0] for item in sorted_items]
+        values = [item[1][metric] for item in sorted_items]
+        games = [item[1]['games'] for item in sorted_items]
+        raw_wr = [item[1]['win_rate']*100 for item in sorted_items]
+
+        plt.style.use('seaborn-v0_8-darkgrid')
+        fig, ax = plt.subplots(figsize=(14, 7))
+
+        norm = plt.Normalize(min(values)*0.9, max(values)*1.1)
+        cmap = cm.get_cmap('RdYlGn')
+
+        bars = ax.bar(items, values, color=cmap(norm(values)), edgecolor='black')
+
+        ax.scatter(items, raw_wr, color='blue', alpha=0.5, label='Raw Win Rate')
+        ax.axhline(overall_win_rate*100, color='red', linestyle='--', label=f'Overall WR ({overall_win_rate*100:.2f}%)')
+
+        ax.set_ylabel("Score" if metric != 'lift' else "Lift (%)")
+        ax.set_title(f"Top {k} Items by {metric.replace('_', ' ').title()}")
+        ax.legend()
+        plt.xticks(range(len(items)), items, rotation=45, ha="right")
+        plt.tight_layout()
+
+        cursor = mplcursors.cursor(bars, hover=True)
+        cursor._epsilon = 3
+
+        @cursor.connect("add")
+        def on_hover(sel):
+            item = items[sel.index]
+            info = metrics[item]
+            text = (f"{item}\n"
+                   f"Games: {info['games']}\n"
+                   f"Raw WR: {info['win_rate']*100:.2f}%\n"
+                   f"Bayesian: {info['bayesian']*100:.2f}%\n"
+                   f"Wilson Lower: {info['wilson_lower']*100:.2f}%\n"
+                   f"Emp. Bayes: {info['empirical_bayes']*100:.2f}%\n"
+                   f"Lift: {info['lift']:.2f}%\n"
+                   f"Combined score: {info['combined_score']:.2f}%")
+
+            sel.annotation.set_text(text)
+            sel.annotation.get_bbox_patch().update({
+                "facecolor": "white",
+                "edgecolor": "black",
+                "boxstyle": "round,pad=0.5",
+                "alpha": 0.9,
+                "linewidth": 1.2
+            })
+            sel.annotation.set_fontsize(10)
+
+        plt.show()
