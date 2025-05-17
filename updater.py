@@ -1,6 +1,7 @@
 import json
 import os
 
+from autocomplete import input_with_autocomplete
 from collections import Counter
 from constants import HEROES, ITEMS, RELICS
 
@@ -23,27 +24,30 @@ def add_game():
             print("  Invalid input, please enter a number.")
     game["opponent_rating"] = opponent_rating
 
-    while True:
-        opponent_hero = input("  Opponent hero: ").strip().lower()
-        if opponent_hero in HEROES:
-            game["opponent_hero"] = opponent_hero
-            break
-        print("  Invalid hero. Please enter a valid hero name.")
+    game["opponent_hero"] = input_with_autocomplete(
+        "  Opponent hero: ",
+        "  Invalid hero. Please enter a valid hero name",
+        options=HEROES,
+        validator=lambda x: x.lower() in HEROES
+    ).lower()
 
     items = {}
     item_count = 1
     print("  Enter your items one by one (press Enter on empty input to finish):")
     while True:
-        item = input(f"    Item {item_count}: ").strip().lower()
-        if item == "":
+        item = input_with_autocomplete(
+            f"    Item {item_count}: ",
+            "      Invalid item. Please enter a valid item name.",
+            options=ITEMS,
+            validator=lambda x: not x or x.lower() in ITEMS
+        )
+        if not item:
             break
-        if item in ITEMS:
-            if item not in items:
-                items[item] = 0
-            items[item] += 1
-            item_count += 1
-        else:
-            print("    Invalid item. Please enter a valid item name.")
+        item = item.lower()
+        if item not in items:
+            items[item] = 0
+        items[item] += 1
+        item_count += 1
     game["items"] = dict(sorted(items.items()))
 
     return game
@@ -68,13 +72,12 @@ def add_match():
             print("Invalid input, please enter a number.")
     match["end_rating"] = end_rating
 
-    while True:
-        hero = input("  Hero: ")
-        if hero in HEROES:
-            break
-        else:
-            print("Invalid hero. Please enter a valid hero name.")
-    match["hero"] = hero
+    match["hero"] = input_with_autocomplete(
+        "  Hero: ",
+        "  Invalid hero. Please enter a valid hero name",
+        options=HEROES,
+        validator=lambda x: x.lower() in HEROES
+    ).lower()
 
     match["games"] = []
 
