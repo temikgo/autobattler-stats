@@ -37,7 +37,7 @@ def add_game():
     while True:
         item = input_with_autocomplete(
             f"    Item {item_count}: ",
-            "      Invalid item. Please enter a valid item name.",
+            "    Invalid item. Please enter a valid item name.",
             options=ITEMS,
             validator=lambda x: not x or x.lower() in ITEMS
         )

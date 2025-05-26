@@ -57,14 +57,14 @@ class RatingProgress(StatisticsFunction):
         visible_max = max_rating + padding
         visible_zones = [
             zone for zone in RANKS 
-            if zone[0] <= max_rating and zone[1] >= min_rating
+            if zone[0] <= visible_max and zone[1] >= visible_min
         ]
-
+        
         for start, end, color, label in visible_zones:
             draw_start = max(start, visible_min)
             draw_end = min(end, visible_max)
-            ax.axhspan(draw_start, draw_end, facecolor=color, alpha=0.7)
-            if start >= min_rating or end <= max_rating:
+            ax.axhspan(draw_start, draw_end, facecolor=color, alpha=0.7, zorder=0)
+            if max(start, visible_min) <= min(end, visible_max):
                 label_pos = (max(start, min_rating) + min(end, max_rating)) / 2
                 ax.text(1.02, label_pos, f"{label} ({start}-{end})", 
                     transform=ax.get_yaxis_transform(),
@@ -73,7 +73,7 @@ class RatingProgress(StatisticsFunction):
         ax.plot(x_values, y_values, linestyle='-', color='black', linewidth=2)
         points = ax.scatter(x_values, y_values, color='black', zorder=3)
 
-        ax.set_ylim(min_rating - padding, max_rating + padding)
+        ax.set_ylim(visible_min, visible_max)
         
         ax.set_xlabel("Match Number")
         ax.set_ylabel("Rating")
